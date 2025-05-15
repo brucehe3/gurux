@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter, Form, Depends, Request
@@ -29,6 +30,41 @@ class FileInfo(BaseModel):
     size: int
     mod_time: str
     permissions: Optional[str] = None
+
+def normalize_path(path: str) -> str:
+    """
+    Normalize a path to ensure proper UTF-8 encoding and handling.
+    
+    Args:
+        path: The file path, potentially containing URL-encoded characters
+        
+    Returns:
+        Normalized path with proper UTF-8 encoding
+    """
+    try:
+        # First, ensure the path is properly URL-decoded
+        decoded_path = urllib.parse.unquote(path)
+        
+        # Handle Unicode escape sequences like \u0308
+        try:
+            # Replace Python-style Unicode escapes (\u0308) with actual characters
+            # This handles cases where the Unicode escape sequence is part of the URL
+            import re
+            unicode_pattern = re.compile(r'\\u([0-9a-fA-F]{4})')
+            
+            def replace_unicode(match):
+                hex_val = match.group(1)
+                return chr(int(hex_val, 16))
+            
+            decoded_path = unicode_pattern.sub(replace_unicode, decoded_path)
+        except Exception as unicode_err:
+            logger.warning(f"Error processing Unicode escapes in path '{path}': {str(unicode_err)}")
+        
+        logger.debug(f"Normalized path from '{path}' to '{decoded_path}'")
+        return decoded_path
+    except Exception as e:
+        logger.error(f"Error normalizing path '{path}': {str(e)}")
+        return path  # Return original path if decoding fails
 
 async def verify_sandbox_access(client, sandbox_id: str, user_id: Optional[str] = None):
     """
@@ -114,6 +150,9 @@ async def create_file(
     user_id: Optional[str] = Depends(get_optional_user_id)
 ):
     """Create a file in the sandbox using direct file upload"""
+    # Normalize the path to handle UTF-8 encoding correctly
+    path = normalize_path(path)
+    
     logger.info(f"Received file upload request for sandbox {sandbox_id}, path: {path}, user_id: {user_id}")
     client = await db.client
     
@@ -144,6 +183,9 @@ async def list_files(
     user_id: Optional[str] = Depends(get_optional_user_id)
 ):
     """List files and directories at the specified path"""
+    # Normalize the path to handle UTF-8 encoding correctly
+    path = normalize_path(path)
+    
     logger.info(f"Received list files request for sandbox {sandbox_id}, path: {path}, user_id: {user_id}")
     client = await db.client
     
@@ -186,7 +228,14 @@ async def read_file(
     user_id: Optional[str] = Depends(get_optional_user_id)
 ):
     """Read a file from the sandbox"""
+    # Normalize the path to handle UTF-8 encoding correctly
+    original_path = path
+    path = normalize_path(path)
+    
     logger.info(f"Received file read request for sandbox {sandbox_id}, path: {path}, user_id: {user_id}")
+    if original_path != path:
+        logger.info(f"Normalized path from '{original_path}' to '{path}'")
+    
     client = await db.client
     
     # Verify the user has access to this sandbox
@@ -196,72 +245,114 @@ async def read_file(
         # Get sandbox using the safer method
         sandbox = await get_sandbox_by_id_safely(client, sandbox_id)
         
+        # Verify the file exists first
+        try:
+            filename = os.path.basename(path)
+            parent_dir = os.path.dirname(path)
+            
+            # List files in the parent directory to check if the file exists
+            files_in_dir = sandbox.fs.list_files(parent_dir)
+            
+            # Look for the target file with exact name match
+            file_exists = any(file.name == filename for file in files_in_dir)
+            
+            if not file_exists:
+                logger.warning(f"File not found: {path} in sandbox {sandbox_id}")
+                
+                # Try to find similar files to help diagnose
+                close_matches = [file.name for file in files_in_dir if filename.lower() in file.name.lower()]
+                error_detail = f"File '{filename}' not found in directory '{parent_dir}'"
+                
+                if close_matches:
+                    error_detail += f". Similar files in the directory: {', '.join(close_matches)}"
+                
+                raise HTTPException(status_code=404, detail=error_detail)
+        except Exception as list_err:
+            # If we can't list files, continue with the download attempt
+            logger.warning(f"Error checking if file exists: {str(list_err)}")
+        
         # Read file
-        content = sandbox.fs.download_file(path)
+        try:
+            content = sandbox.fs.download_file(path)
+        except Exception as download_err:
+            logger.error(f"Error downloading file {path} from sandbox {sandbox_id}: {str(download_err)}")
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Failed to download file: {str(download_err)}"
+            )
         
         # Return a Response object with the content directly
         filename = os.path.basename(path)
         logger.info(f"Successfully read file {filename} from sandbox {sandbox_id}")
+        
+        # Ensure proper encoding by explicitly using UTF-8 for the filename in Content-Disposition header
+        # This applies RFC 5987 encoding for the filename to support non-ASCII characters
+        encoded_filename = filename.encode('utf-8').decode('latin-1')
+        content_disposition = f"attachment; filename*=UTF-8''{encoded_filename}"
+        
         return Response(
             content=content,
             media_type="application/octet-stream",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+            headers={"Content-Disposition": content_disposition}
         )
+    except HTTPException:
+        # Re-raise HTTP exceptions without wrapping
+        raise
     except Exception as e:
         logger.error(f"Error reading file in sandbox {sandbox_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Should happen on server-side fully
-# @router.post("/project/{project_id}/sandbox/ensure-active")
-# async def ensure_project_sandbox_active(
-#     project_id: str,
-#     request: Request = None,
-#     user_id: Optional[str] = Depends(get_optional_user_id)
-# ):
-#     """
-#     Ensure that a project's sandbox is active and running.
-#     Checks the sandbox status and starts it if it's not running.
-#     """
-#     logger.info(f"Received ensure sandbox active request for project {project_id}, user_id: {user_id}")
-#     client = await db.client
+@router.post("/project/{project_id}/sandbox/ensure-active")
+async def ensure_project_sandbox_active(
+    project_id: str,
+    request: Request = None,
+    user_id: Optional[str] = Depends(get_optional_user_id)
+):
+    """
+    Ensure that a project's sandbox is active and running.
+    Checks the sandbox status and starts it if it's not running.
+    """
+    logger.info(f"Received ensure sandbox active request for project {project_id}, user_id: {user_id}")
+    client = await db.client
     
-#     # Find the project and sandbox information
-#     project_result = await client.table('projects').select('*').eq('project_id', project_id).execute()
+    # Find the project and sandbox information
+    project_result = await client.table('projects').select('*').eq('project_id', project_id).execute()
     
-#     if not project_result.data or len(project_result.data) == 0:
-#         logger.error(f"Project not found: {project_id}")
-#         raise HTTPException(status_code=404, detail="Project not found")
+    if not project_result.data or len(project_result.data) == 0:
+        logger.error(f"Project not found: {project_id}")
+        raise HTTPException(status_code=404, detail="Project not found")
     
-#     project_data = project_result.data[0]
+    project_data = project_result.data[0]
     
-#     # For public projects, no authentication is needed
-#     if not project_data.get('is_public'):
-#         # For private projects, we must have a user_id
-#         if not user_id:
-#             logger.error(f"Authentication required for private project {project_id}")
-#             raise HTTPException(status_code=401, detail="Authentication required for this resource")
+    # For public projects, no authentication is needed
+    if not project_data.get('is_public'):
+        # For private projects, we must have a user_id
+        if not user_id:
+            logger.error(f"Authentication required for private project {project_id}")
+            raise HTTPException(status_code=401, detail="Authentication required for this resource")
             
-#         account_id = project_data.get('account_id')
+        account_id = project_data.get('account_id')
         
-#         # Verify account membership
-#         if account_id:
-#             account_user_result = await client.schema('basejump').from_('account_user').select('account_role').eq('user_id', user_id).eq('account_id', account_id).execute()
-#             if not (account_user_result.data and len(account_user_result.data) > 0):
-#                 logger.error(f"User {user_id} not authorized to access project {project_id}")
-#                 raise HTTPException(status_code=403, detail="Not authorized to access this project")
+        # Verify account membership
+        if account_id:
+            account_user_result = await client.schema('basejump').from_('account_user').select('account_role').eq('user_id', user_id).eq('account_id', account_id).execute()
+            if not (account_user_result.data and len(account_user_result.data) > 0):
+                logger.error(f"User {user_id} not authorized to access project {project_id}")
+                raise HTTPException(status_code=403, detail="Not authorized to access this project")
     
-#     try:
-#         # Get or create the sandbox
-#         logger.info(f"Ensuring sandbox is active for project {project_id}")
-#         sandbox, sandbox_id, sandbox_pass = await get_or_create_project_sandbox(client, project_id)
+    try:
+        # Get or create the sandbox
+        logger.info(f"Ensuring sandbox is active for project {project_id}")
+        sandbox, sandbox_id, sandbox_pass = await get_or_create_project_sandbox(client, project_id)
         
-#         logger.info(f"Successfully ensured sandbox {sandbox_id} is active for project {project_id}")
+        logger.info(f"Successfully ensured sandbox {sandbox_id} is active for project {project_id}")
         
-#         return {
-#             "status": "success", 
-#             "sandbox_id": sandbox_id,
-#             "message": "Sandbox is active"
-#         }
-#     except Exception as e:
-#         logger.error(f"Error ensuring sandbox is active for project {project_id}: {str(e)}")
-#         raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "status": "success", 
+            "sandbox_id": sandbox_id,
+            "message": "Sandbox is active"
+        }
+    except Exception as e:
+        logger.error(f"Error ensuring sandbox is active for project {project_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
