@@ -34,7 +34,7 @@ EXPOSE 8000
 
 # Calculate optimal worker count based on 16 vCPUs
 # Using (2*CPU)+1 formula for CPU-bound applications
-ENV WORKERS=33
+ENV WORKERS=4
 ENV THREADS=2
 ENV WORKER_CONNECTIONS=2000
 
