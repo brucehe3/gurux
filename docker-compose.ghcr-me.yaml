@@ -88,7 +88,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend/.env.production:/app/.env.production:ro
+      - ./frontend/.env.production:/app/.env:ro
     environment:
       - NODE_ENV=production
     command: ["npm", "run", "start"]
