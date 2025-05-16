@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
   redis:
     image: redis:7-alpine
     ports:
@@ -90,4 +98,3 @@ services:
 volumes:
   redis-data:
   rabbitmq_data:
-  
