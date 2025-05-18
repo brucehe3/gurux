@@ -16,7 +16,7 @@ export function CTASection() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-chart-2/20 rounded-full filter blur-3xl" />
       </div>
 
-      <div className="container px-4 md:px-6">
+      <div className="px-4 md:px-6">
         <FadeIn>
           <div className="max-w-[900px] mx-auto text-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl mb-6">
