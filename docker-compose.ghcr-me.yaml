@@ -87,11 +87,9 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY}/suna-frontend:latest
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend/.env:/app/.env:ro
     environment:
       - NODE_ENV=production
-    command: ["npm", "run", "dev"]
+    command: ["npm", "run", "start"]
     depends_on:
       - backend
 
