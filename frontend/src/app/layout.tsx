@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: `%s - ${siteConfig.name}`,
   },
   description:
-    'Suna is a fully open source AI assistant that helps you accomplish real-world tasks with ease. Through natural conversation, Suna becomes your digital companion for research, data analysis, and everyday challenges.',
+    'GuruX is an open-source AI assistant built for developers and creators, focused on executing real-world tasks with efficiency. Through natural language interaction, it empowers data-driven decisions, process automation, and deep insights.',
   keywords: [
     'AI',
     'artificial intelligence',
@@ -43,11 +43,11 @@ export const metadata: Metadata = {
     'research',
     'data analysis',
   ],
-  authors: [{ name: 'Kortix Team', url: 'https://suna.so' }],
+  authors: [{ name: 'GuruX Team', url: 'https://x.guruall.com' }],
   creator:
-    'Kortix Team - Adam Cohen Hillel, Marko Kraemer, Domenico Gagliardi, and Quoc Dat Le',
+    'GuruX is built upon the open-source project Suna — with thanks to the original authors, the Kortix Team',
   publisher:
-    'Kortix Team - Adam Cohen Hillel, Marko Kraemer, Domenico Gagliardi, and Quoc Dat Le',
+    'GuruX is built upon the open-source project Suna — with thanks to the original authors, the Kortix Team',
   category: 'Technology',
   applicationName: 'Suna',
   formatDetection: {
@@ -64,9 +64,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Suna - Open Source Generalist AI Agent',
+    title: 'GuruX - Open Source Generalist AI Agent',
     description:
-      'Suna is a fully open source AI assistant that helps you accomplish real-world tasks with ease through natural conversation.',
+      'GuruX is a fully open-source AI assistant that helps you handle real-world tasks efficiently through natural conversation.',
     url: siteConfig.url,
     siteName: 'Suna',
     images: [
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
         url: '/banner.png',
         width: 1200,
         height: 630,
-        alt: 'Suna - Open Source Generalist AI Agent',
+        alt: 'GuruX - Open Source Generalist AI Agent',
         type: 'image/png',
       },
     ],
@@ -83,9 +83,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Suna - Open Source Generalist AI Agent',
+    title: 'GuruX - Open Source Generalist AI Agent',
     description:
-      'Suna is a fully open source AI assistant that helps you accomplish real-world tasks with ease through natural conversation.',
+      'GuruX is a fully open-source AI assistant that helps you handle real-world tasks efficiently through natural conversation.',
     creator: '@kortixai',
     site: '@kortixai',
     images: [
@@ -93,7 +93,7 @@ export const metadata: Metadata = {
         url: '/banner.png',
         width: 1200,
         height: 630,
-        alt: 'Suna - Open Source Generalist AI Agent',
+        alt: 'GuruX - Open Source Generalist AI Agent',
       },
     ],
   },
@@ -121,7 +121,7 @@ export default function RootLayout({
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-PCHSN4M2');`}
+          })(window,document,'script','dataLayer','GTM-TD2HQTW2');`}
         </Script>
         {/* End Google Tag Manager */}
       </head>
@@ -132,7 +132,7 @@ export default function RootLayout({
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-PCHSN4M2"
+            src="https://www.googletagmanager.com/ns.html?id=GTM-TD2HQTW2"
             height="0"
             width="0"
             style={{ display: 'none', visibility: 'hidden' }}
@@ -151,7 +151,7 @@ export default function RootLayout({
             <Toaster />
           </Providers>
           <Analytics />
-          <GoogleAnalytics gaId="G-6ETJFB3PT3" />
+          <GoogleAnalytics gaId="G-9QBXTXQS7N" />
           <SpeedInsights />
         </ThemeProvider>
       </body>

@@ -97,11 +97,11 @@ export const siteConfig = {
       </svg>
     ),
     badge: '100% OPEN SOURCE',
-    githubUrl: 'https://github.com/kortix-ai/suna',
-    title: 'Suna, the AI Employee.',
+    githubUrl: 'https://github.com/brucehe3/gurux',
+    title: 'GuruX, the AI Employee.',
     description:
-      'Suna by Kortix – is a generalist AI Agent that acts on your behalf.',
-    inputPlaceholder: 'Ask Suna to...',
+      'GuruX is a generalist AI Agent, built on Suna',
+    inputPlaceholder: 'Ask GuruX to...',
   },
   cloudPricingItems: [
     {
@@ -1100,7 +1100,7 @@ export const siteConfig = {
   },
   ctaSection: {
     id: 'cta',
-    title: 'Start Using Kortix Suna Today',
+    title: 'Start Using GuruX Today',
     backgroundImage: '/holo.png',
     button: {
       text: 'Get Started for free',
@@ -1110,11 +1110,10 @@ export const siteConfig = {
   },
   footerLinks: [
     {
-      title: 'Kortix',
+      title: 'GuruAll',
       links: [
-        { id: 1, title: 'About', url: 'https://kortix.ai' },
-        { id: 3, title: 'Contact', url: 'mailto:hey@kortix.ai' },
-        { id: 4, title: 'Careers', url: 'https://kortix.ai/careers' },
+        { id: 1, title: 'About', url: 'https://www.guruall.com' },
+        { id: 3, title: 'Contact', url: 'mailto:gurux@guruall.com' },
       ],
     },
     {
@@ -1123,10 +1122,9 @@ export const siteConfig = {
         {
           id: 5,
           title: 'Documentation',
-          url: 'https://github.com/Kortix-ai/Suna',
+          url: 'https://github.com/brucehe3/gurux',
         },
-        { id: 7, title: 'Discord', url: 'https://discord.gg/Py6pCBUUPw' },
-        { id: 8, title: 'GitHub', url: 'https://github.com/Kortix-ai/Suna' },
+        { id: 8, title: 'GitHub', url: 'https://github.com/brucehe3/gurux' },
       ],
     },
     {
@@ -1135,17 +1133,17 @@ export const siteConfig = {
         {
           id: 9,
           title: 'Privacy Policy',
-          url: 'https://suna.so/legal?tab=privacy',
+          url: 'https://x.guruall.com/legal?tab=privacy',
         },
         {
           id: 10,
           title: 'Terms of Service',
-          url: 'https://suna.so/legal?tab=terms',
+          url: 'https://x.guruall.com/legal?tab=terms',
         },
         {
           id: 11,
           title: 'License Apache 2.0',
-          url: 'https://github.com/Kortix-ai/Suna/blob/main/LICENSE',
+          url: 'https://github.com/brucehe3/gurux/blob/main/LICENSE',
         },
       ],
     },
