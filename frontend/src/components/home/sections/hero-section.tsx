@@ -1,7 +1,7 @@
 'use client';
 import { HeroVideoSection } from '@/components/home/sections/hero-video-section';
 import { siteConfig } from '@/lib/home';
-import { ArrowRight, Github, X, AlertCircle } from 'lucide-react';
+import { ArrowRight, AlertCircle, MessageSquare } from 'lucide-react';
 import { FlickeringGrid } from '@/components/home/ui/flickering-grid';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useState, useEffect, useRef, FormEvent } from 'react';
@@ -16,6 +16,11 @@ import {
   startAgent,
   BillingError,
 } from '@/lib/api';
+import { 
+  FadeIn, 
+  FadeInStagger, 
+  FadeInStaggerItem 
+} from "@/components/ui/motion";
 import { generateThreadName } from '@/lib/actions/threads';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import { Input } from '@/components/ui/input';
@@ -226,48 +231,13 @@ export function HeroSection() {
 
   return (
     <section id="hero" className="w-full relative overflow-hidden">
-      <div className="relative flex flex-col items-center w-full px-6">
-        {/* Left side flickering grid with gradient fades */}
-        <div className="absolute left-0 top-0 h-[600px] md:h-[800px] w-1/3 -z-10 overflow-hidden">
-          {/* Horizontal fade from left to right */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background z-10" />
-
-          {/* Vertical fade from top */}
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background via-background/90 to-transparent z-10" />
-
-          {/* Vertical fade to bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/90 to-transparent z-10" />
-
-          <FlickeringGrid
-            className="h-full w-full"
-            squareSize={mounted && tablet ? 2 : 2.5}
-            gridGap={mounted && tablet ? 2 : 2.5}
-            color="var(--secondary)"
-            maxOpacity={0.4}
-            flickerChance={isScrolling ? 0.01 : 0.03} // Low flickering when not scrolling
-          />
-        </div>
-
-        {/* Right side flickering grid with gradient fades */}
-        <div className="absolute right-0 top-0 h-[600px] md:h-[800px] w-1/3 -z-10 overflow-hidden">
-          {/* Horizontal fade from right to left */}
-          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-background z-10" />
-
-          {/* Vertical fade from top */}
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background via-background/90 to-transparent z-10" />
-
-          {/* Vertical fade to bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/90 to-transparent z-10" />
-
-          <FlickeringGrid
-            className="h-full w-full"
-            squareSize={mounted && tablet ? 2 : 2.5}
-            gridGap={mounted && tablet ? 2 : 2.5}
-            color="var(--secondary)"
-            maxOpacity={0.4}
-            flickerChance={isScrolling ? 0.01 : 0.03} // Low flickering when not scrolling
-          />
-        </div>
+      <div className="relative flex flex-col items-center w-full px-6 min-h-[60vh] ustify-center">
+        {/* Background gradient elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-chart-1/20 rounded-full filter blur-3xl" />
+        <div className="absolute top-1/3 -right-10 w-72 h-72 bg-chart-2/20 rounded-full filter blur-3xl" />
+        <div className="absolute -bottom-10 left-1/3 w-72 h-72 bg-chart-3/20 rounded-full filter blur-3xl" />
+      </div>
 
         {/* Center content background with rounded bottom */}
         <div className="absolute inset-x-1/4 top-0 h-[600px] md:h-[800px] -z-20 bg-background rounded-b-xl"></div>
@@ -277,50 +247,60 @@ export function HeroSection() {
             {hero.badgeIcon}
             {hero.badge}
           </p> */}
+          <FadeIn>
+            <Link
+              href={hero.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group border border-border/50 bg-background hover:bg-accent/20 hover:border-secondary/40 rounded-full text-sm h-8 px-3 flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 hover:-translate-y-0.5"
+            >
+              {hero.badgeIcon}
+              <span className="font-medium text-muted-foreground text-xs tracking-wide group-hover:text-primary transition-colors duration-300">
+                {hero.badge}
+              </span>
+              <span className="inline-flex items-center justify-center size-3.5 rounded-full bg-muted/30 group-hover:bg-secondary/30 transition-colors duration-300">
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-muted-foreground group-hover:text-primary"
+                >
+                  <path
+                    d="M7 17L17 7M17 7H8M17 7V16"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </Link>
+          </FadeIn>
 
-          <Link
-            href={hero.githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group border border-border/50 bg-background hover:bg-accent/20 hover:border-secondary/40 rounded-full text-sm h-8 px-3 flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md hover:scale-105 hover:-translate-y-0.5"
-          >
-            {hero.badgeIcon}
-            <span className="font-medium text-muted-foreground text-xs tracking-wide group-hover:text-primary transition-colors duration-300">
-              {hero.badge}
-            </span>
-            <span className="inline-flex items-center justify-center size-3.5 rounded-full bg-muted/30 group-hover:bg-secondary/30 transition-colors duration-300">
-              <svg
-                width="8"
-                height="8"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-muted-foreground group-hover:text-primary"
-              >
-                <path
-                  d="M7 17L17 7M17 7H8M17 7V16"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </Link>
-          <div className="flex flex-col items-center justify-center gap-5">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium tracking-tighter text-balance text-center">
-              <span className="text-secondary">Suna</span>
-              <span className="text-primary">, your AI Employee.</span>
-            </h1>
-            <p className="text-base md:text-lg text-center text-muted-foreground font-medium text-balance leading-relaxed tracking-tight">
-              {hero.description}
-            </p>
-          </div>
+          
+          <FadeIn delay={0.2}>
+            <div className="flex flex-col items-center justify-center gap-5">
+              
+              <h1 className="text-4xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-chart-1 via-chart-2 to-chart-3 mb-12">
+                GuruX, your AI Employee.
+              </h1>
+              
+              <p className="text-base md:text-lg text-center text-muted-foreground font-medium text-balance leading-relaxed tracking-tight">
+                {hero.description}
+              </p>
+            </div>
+
+          </FadeIn>
           <div className="flex items-center w-full max-w-xl gap-2 flex-wrap justify-center">
             <form className="w-full relative" onSubmit={handleSubmit}>
               {/* ChatGPT-like input with glow effect */}
               <div className="relative z-10">
                 <div className="flex items-center rounded-full border border-border bg-background/80 backdrop-blur px-4 shadow-lg transition-all duration-200 hover:border-secondary/50 focus-within:border-secondary/50 focus-within:shadow-[0_0_15px_rgba(var(--secondary),0.3)]">
+                  <div className="flex-shrink-0 p-2">
+                    <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                  </div>
                   <input
                     type="text"
                     value={inputValue}
@@ -354,9 +334,7 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-      <div className="mb-10 max-w-4xl mx-auto">
-        <HeroVideoSection />
-      </div>
+
 
       {/* Auth Dialog */}
       <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
@@ -375,7 +353,7 @@ export function HeroSection() {
               </button> */}
             </div>
             <DialogDescription className="text-muted-foreground">
-              Sign in or create an account to talk with Suna
+              Sign in or create an account to talk with GuruX
             </DialogDescription>
           </DialogHeader>
 

@@ -24,6 +24,9 @@ import {
 } from '@/lib/api';
 import { toast } from 'sonner';
 import { isLocalMode } from '@/lib/config';
+import { CheckCircle2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { FadeIn, FadeInStagger, FadeInStaggerItem } from "@/components/ui/motion";
 
 // Constants
 const DEFAULT_SELECTED_PLAN = '6 hours';
@@ -125,37 +128,22 @@ function PricingTabs({ activeTab, setActiveTab, className }: PricingTabsProps) {
 
 function PriceDisplay({ price, isCompact }: PriceDisplayProps) {
   return (
-    <motion.span
-      key={price}
-      className={isCompact ? 'text-xl font-semibold' : 'text-4xl font-semibold'}
-      initial={{
-        opacity: 0,
-        x: 10,
-        filter: 'blur(5px)',
-      }}
-      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-    >
-      {price}
-    </motion.span>
+    
+    <div className="flex items-baseline mt-2">
+      <span className="text-4xl font-bold">{price}</span>
+      {price !="$0" && (
+          <span className="ml-1 text-muted-foreground">/month</span>
+      )}
+    </div>
   );
 }
 
 function CustomPriceDisplay({ price }: CustomPriceDisplayProps) {
   return (
-    <motion.span
-      key={price}
-      className="text-4xl font-semibold"
-      initial={{
-        opacity: 0,
-        x: 10,
-        filter: 'blur(5px)',
-      }}
-      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-    >
-      {price}
-    </motion.span>
+    <div className="flex items-baseline mt-2">
+      <span className="text-4xl font-bold">{price}</span>
+        <span className="ml-1 text-muted-foreground">/month</span>
+    </div>
   );
 }
 
@@ -497,26 +485,23 @@ function PricingTier({
   }
 
   return (
-    <div
-      className={cn(
-        'rounded-xl flex flex-col relative h-fit min-h-[400px] min-[650px]:h-full min-[900px]:h-fit',
-        tier.isPopular
-          ? 'md:shadow-[0px_61px_24px_-10px_rgba(0,0,0,0.01),0px_34px_20px_-8px_rgba(0,0,0,0.05),0px_15px_15px_-6px_rgba(0,0,0,0.09),0px_4px_8px_-2px_rgba(0,0,0,0.10),0px_0px_0px_1px_rgba(0,0,0,0.08)] bg-accent'
-          : 'bg-[#F3F4F6] dark:bg-[#F9FAFB]/[0.02] border border-border',
-        ringClass,
+
+    <Card className={`h-full flex flex-col ${
+      tier.isPopular 
+        ? "border-chart-1 relative before:absolute before:inset-0 before:rounded-lg before:bg-chart-1/5 before:-z-10 before:blur-xl"
+        : ""
+    }`}>
+      {tier.isPopular && (
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-chart-1 text-white text-xs font-semibold rounded-full">
+          Most Popular
+        </div>
       )}
-    >
-      <div className="flex flex-col gap-4 p-4">
-        <p className="text-sm flex items-center gap-2">
-          {tier.name}
-          {tier.isPopular && (
-            <span className="bg-gradient-to-b from-secondary/50 from-[1.92%] to-secondary to-[100%] text-white h-6 inline-flex w-fit items-center justify-center px-2 rounded-full text-sm shadow-[0px_6px_6px_-3px_rgba(0,0,0,0.08),0px_3px_3px_-1.5px_rgba(0,0,0,0.08),0px_1px_1px_-0.5px_rgba(0,0,0,0.08),0px_0px_0px_1px_rgba(255,255,255,0.12)_inset,0px_1px_0px_0px_rgba(255,255,255,0.12)_inset]">
-              Popular
-            </span>
-          )}
-          {isAuthenticated && statusBadge}
-        </p>
-        <div className="flex items-baseline mt-2">
+
+      <CardHeader >
+        <CardTitle className="text-2xl">
+          {tier.name} {isAuthenticated && statusBadge}
+        </CardTitle>
+        <div className="flex items-baseline">
           {tier.name === 'Custom' ? (
             <CustomPriceDisplay
               price={getPriceValue(tier, localSelectedPlan)}
@@ -524,12 +509,14 @@ function PricingTier({
           ) : (
             <PriceDisplay price={tier.price} />
           )}
-          <span className="ml-2">{tier.price !== '$0' ? '/month' : ''}</span>
         </div>
-        <p className="text-sm mt-2">{tier.description}</p>
+        <CardDescription className="mt-2">{tier.description}</CardDescription>
+      </CardHeader>
+      
+      <CardContent className="flex-1">
 
         {tier.name === 'Custom' && tier.upgradePlans ? (
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-2 mb-4">
             <p className="text-xs font-medium text-muted-foreground">
               Customize your monthly usage
             </p>
@@ -553,48 +540,40 @@ function PricingTier({
                 ))}
               </SelectContent>
             </Select>
-            <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary/10 border-primary/20 text-primary w-fit">
-              {localSelectedPlan}/month
-            </div>
+            
           </div>
         ) : (
-          <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary/10 border-primary/20 text-primary w-fit">
-            {getDisplayedHours(tier)}/month
-          </div>
+          <></>
         )}
-      </div>
 
-      <div className="p-4 flex-grow">
-        {tier.features && tier.features.length > 0 && (
-          <ul className="space-y-3">
-            {tier.features.map((feature) => (
-              <li key={feature} className="flex items-center gap-2">
-                <div className="size-5 rounded-full border border-primary/20 flex items-center justify-center">
-                  <CheckIcon className="size-3 text-primary" />
-                </div>
-                <span className="text-sm">{feature}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+        <ul className="space-y-3">
+          {tier.features.map((feature, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <CheckCircle2 className="h-5 w-5 text-chart-1 shrink-0 mt-0.5" />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
 
-      <div className="mt-auto p-4">
+
+      <CardFooter>
         <Button
           onClick={() => handleSubscribe(tierPriceId)}
           disabled={buttonDisabled}
-          variant={buttonVariant || 'default'}
+          variant={tier.isPopular ? "default" : "outline"}
           className={cn(
             'w-full font-medium transition-all duration-200',
-            isCompact ? 'h-7 rounded-md text-xs' : 'h-10 rounded-full text-sm',
-            buttonClassName,
+            isCompact ? 'h-7 text-xs' : 'h-10 text-sm',
+            tier.isPopular ? "bg-primary" : "bg-background hover:bg-gray-100 text-foreground",
             isPlanLoading && 'animate-pulse',
           )}
         >
           {buttonText}
         </Button>
-      </div>
-    </div>
+      </CardFooter>
+
+    </Card>
   );
 }
 
@@ -666,7 +645,7 @@ export function PricingSection({
     }
   };
 
-  if (isLocalMode()) {
+  if (! isLocalMode()) {
     return (
       <div className="p-4 bg-muted/30 border border-border rounded-lg text-center">
         <p className="text-sm text-muted-foreground">
@@ -677,50 +656,51 @@ export function PricingSection({
   }
 
   return (
-    <section
-      id="pricing"
-      className="flex flex-col items-center justify-center gap-10 pb-20 w-full relative"
-    >
+    <section id="pricing" className="py-24 bg-muted/50">
+      
+      <div className="container px-4 md:px-6">
+
       {showTitleAndTabs && (
         <>
-          <SectionHeader>
-            <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance">
-              Choose the right plan for your needs
+          <FadeIn>
+          <div className="text-center max-w-[800px] mx-auto mb-16">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              Simple, Transparent Pricing
             </h2>
-            <p className="text-muted-foreground text-center text-balance font-medium">
-              Start with our free plan or upgrade to a premium plan for more
-              usage hours
+            <p className="mt-4 text-muted-foreground text-lg">
+              Choose the perfect plan to accelerate your learning journey.
+              No hidden fees, cancel anytime.
             </p>
-          </SectionHeader>
-          <div className="relative w-full h-full">
-            <div className="absolute -top-14 left-1/2 -translate-x-1/2">
-              <PricingTabs
-                activeTab={deploymentType}
-                setActiveTab={handleTabChange}
-                className="mx-auto"
-              />
-            </div>
           </div>
+        </FadeIn>
+
         </>
       )}
 
       {deploymentType === 'cloud' && (
-        <div className="grid min-[650px]:grid-cols-2 min-[900px]:grid-cols-3 gap-4 w-full max-w-6xl mx-auto px-6">
-          {siteConfig.cloudPricingItems.map((tier) => (
-            <PricingTier
-              key={tier.name}
-              tier={tier}
-              currentSubscription={currentSubscription}
-              isLoading={isLoading}
-              isFetchingPlan={isFetchingPlan}
-              onPlanSelect={handlePlanSelect}
-              onSubscriptionUpdate={handleSubscriptionUpdate}
-              isAuthenticated={isAuthenticated}
-              returnUrl={returnUrl}
-            />
-          ))}
-        </div>
+        <FadeInStagger>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {siteConfig.cloudPricingItems.map((tier, index) => (
+              <FadeInStaggerItem key={index}>
+                <PricingTier
+                  key={tier.name}
+                  tier={tier}
+                  currentSubscription={currentSubscription}
+                  isLoading={isLoading}
+                  isFetchingPlan={isFetchingPlan}
+                  onPlanSelect={handlePlanSelect}
+                  onSubscriptionUpdate={handleSubscriptionUpdate}
+                  isAuthenticated={isAuthenticated}
+                  returnUrl={returnUrl}
+                />
+              </FadeInStaggerItem>
+            ))}
+          </div>
+        </FadeInStagger>
       )}
+
+      </div>
+
     </section>
   );
 }
