@@ -645,7 +645,7 @@ export function PricingSection({
     }
   };
 
-  if (! isLocalMode()) {
+  if (isLocalMode()) {
     return (
       <div className="p-4 bg-muted/30 border border-border rounded-lg text-center">
         <p className="text-sm text-muted-foreground">
